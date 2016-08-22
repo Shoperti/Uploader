@@ -1,0 +1,39 @@
+{
+    "name": "shoperti/uploader",
+    "description": "Smart uploader for files for Laravel",
+    "keywords": [
+        "laravel",
+        "framework",
+        "uploader"
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "illuminate/contracts": "5.0.*|5.1.*|5.2.*|5.3.*",
+        "illuminate/support": "5.0.*|5.1.*|5.2.*|5.3.*",
+        "illuminate/filesystem": "5.0.*|5.1.*|5.2.*|5.3.*",
+        "illuminate/http": "5.0.*|5.1.*|5.2.*|5.3.*",
+        "intervention/image": "^2.3.7",
+        "graham-campbell/manager": "^2.4.0"
+    },
+    "require-dev": {
+        "graham-campbell/testbench": "^3.1",
+        "phpunit/phpunit": "^4.8|^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shoperti\\Uploader\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Shoperti\\Tests\\Uploader\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
