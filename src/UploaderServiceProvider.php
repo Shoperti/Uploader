@@ -3,9 +3,9 @@
 namespace Shoperti\Uploader;
 
 use Illuminate\Contracts\Container\Container;
-use Shoperti\Uploader\Contracts\Uploader as UploaderContract;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use Shoperti\Uploader\Contracts\Uploader as UploaderContract;
 
 class UploaderServiceProvider extends ServiceProvider
 {
@@ -42,29 +42,11 @@ class UploaderServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // $this->registerFactory($this->app);
-
         $this->registerBindings($this->app);
     }
 
-    // /**
-    //  * Register the factory class.
-    //  *
-    //  * @param \Illuminate\Contracts\Foundation\Application $app
-    //  *
-    //  * @return void
-    //  */
-    // protected function registerFactory(Application $app)
-    // {
-    //     $app->singleton('server.factory', function ($app) {
-    //         return new UploaderFactory($app['filesystem']);
-    //     });
-    //
-    //     $app->alias('uploader.factory', UploaderFactory::class);
-    // }
-
     /**
-     * Register the glide class.
+     * Register the Uploader class.
      *
      * @param \Illuminate\Contracts\Foundation\Application $app
      *
@@ -74,10 +56,13 @@ class UploaderServiceProvider extends ServiceProvider
     {
         $app->bind('uploader', function (Container $app) {
             $config = $app['config']['uploader'];
-            $filesystem = $app['files'];
-            $storage = $app['filesystem'];
+            $filesystemManager = $app['filesystem'];
 
-            return new Uploader($config, $filesystem, $storage);
+            $configurationManager = new ConfigurationManager($config);
+            $nameGenerator = new FileNameGenerator($filesystemManager);
+            $fileProcessor = new FileProcessor();
+
+            return new Uploader($configurationManager, $nameGenerator, $fileProcessor, $filesystemManager);
         });
 
         $app->alias('uploader', UploaderContract::class);
