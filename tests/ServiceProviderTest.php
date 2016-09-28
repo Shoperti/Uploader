@@ -16,9 +16,9 @@ class ServiceProviderTest extends AbstractTestCase
 {
     use ServiceProviderTrait;
 
-    public function testUploaderIsInjectable()
+    public function testUploaderContractIsInjectable()
     {
-        $this->assertIsInjectable(Uploader::class);
+        $this->assertIsInjectable(UploaderContract::class);
     }
 
     public function testBindings()
