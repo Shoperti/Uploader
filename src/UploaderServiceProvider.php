@@ -3,9 +3,15 @@
 namespace Shoperti\Uploader;
 
 use Illuminate\Contracts\Container\Container;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Foundation\Application as LaravelApplication;
 use Illuminate\Support\ServiceProvider;
 use Shoperti\Uploader\Contracts\Uploader as UploaderContract;
+use Shoperti\Uploader\Contracts\Factory as FactoryContract;
+use Shoperti\Uploader\Processors\ProcessorResolver;
+use Shoperti\Uploader\Processors\FileProcessor;
+use Shoperti\Uploader\Processors\ImageProcessor;
+use Shoperti\Uploader\ConfigManager;
+use Laravel\Lumen\Application as LumenApplication;
 
 class UploaderServiceProvider extends ServiceProvider
 {
@@ -28,8 +34,10 @@ class UploaderServiceProvider extends ServiceProvider
     {
         $source = realpath(__DIR__.'/../config/uploader.php');
 
-        if (class_exists('Illuminate\Foundation\Application', false)) {
+        if ($this->app instanceof LaravelApplication && $this->app->runningInConsole()) {
             $this->publishes([$source => config_path('uploader.php')]);
+        } elseif ($this->app instanceof LumenApplication) {
+            $this->app->configure('uploader');
         }
 
         $this->mergeConfigFrom($source, 'uploader');
@@ -42,41 +50,93 @@ class UploaderServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->registerBindings($this->app);
+        // $this->registerConfigManager();
+        $this->registerProcessorResolver();
+        $this->registerBindings();
+    }
+
+    public function registerConfigManager()
+    {
+        $this->app->singleton('uploader.config.manager', function (Container $app) {
+            return new ConfigManager($app['config']['uploader']);
+        });
+    }
+
+    public function registerProcessorResolver()
+    {
+        $this->app->singleton('uploader.processor.resolver', function (Container $app) {
+            $resolver = new ProcessorResolver();
+
+            foreach (['file', 'image'] as $processor) {
+                $this->{'register'.ucfirst($processor).'Processor'}($resolver, $processor);
+            }
+
+            return $resolver;
+        });
+    }
+
+    /**
+     * Register the files processor implementation.
+     *
+     * @param \Shoperti\Uploader\Processors\ProcessorResolver $resolver
+     * @param string                                          $processor
+     *
+     * @return void
+     */
+    public function registerFileProcessor(ProcessorResolver $resolver, $processor)
+    {
+        $resolver->register($processor, function () {
+            return new FileProcessor();
+        });
+    }
+
+    /**
+     * Register the images processor implementation.
+     *
+     * @param \Shoperti\Uploader\Processors\ProcessorResolver $resolver
+     * @param string                                          $processor
+     *
+     * @return void
+     */
+    public function registerImageProcessor(ProcessorResolver $resolver, $processor)
+    {
+        $resolver->register($processor, function () {
+            return new ImageProcessor();
+        });
     }
 
     /**
      * Register the Uploader class.
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
-     *
      * @return void
      */
-    protected function registerBindings(Application $app)
+    protected function registerBindings()
     {
-        $app->bind('uploader', function (Container $app) {
+        $this->app->singleton('uploader', function (Container $app) {
             $config = $app['config']['uploader'];
-            $filesystemManager = $app['filesystem'];
 
-            $configurationManager = new ConfigurationManager($config);
-            $nameGenerator = new FileNameGenerator($filesystemManager);
-            $fileProcessor = new FileProcessor();
+            $resolver = $app['uploader.processor.resolver'];
 
-            return new Uploader($configurationManager, $nameGenerator, $fileProcessor, $filesystemManager);
+            $filesystem = $app['filesystem'];
+
+            $nameGenerator = new FileNameGenerator($filesystem);
+
+            return new Factory($resolver, $filesystem, $nameGenerator, $config);
         });
 
-        $app->alias('uploader', UploaderContract::class);
+        $this->app->alias('uploader', Factory::class);
+        $this->app->alias('uploader', FactoryContract::class);
     }
 
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return string[]
-     */
-    public function provides()
-    {
-        return [
-            'uploader',
-        ];
-    }
+    // /**
+    //  * Get the services provided by the provider.
+    //  *
+    //  * @return string[]
+    //  */
+    // public function provides()
+    // {
+    //     return [
+    //         'uploader',
+    //     ];
+    // }
 }

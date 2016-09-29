@@ -59,6 +59,7 @@ return [
      */
     'configurations' => [
         'images' => [
+            'processor'                 => 'image',
             'disk'                      => env('UPLOADER_IMAGES_DISK', 's3'),
             'subpath'                   => env('UPLOADER_IMAGES_SUBPATH', 'images'),
             'file_naming'               => env('UPLOADER_IMAGES_FILE_NAMING', 'fix'),
@@ -66,6 +67,7 @@ return [
             'image_resize_memory_limit' => env('UPLOADER_IMAGES_RESIZE_MEMORY_LIMIT', '128M'),
         ],
         'files' => [
+            'processor'   => 'file',
             'disk'        => env('UPLOADER_FILES_DISK', 's3'),
             'subpath'     => env('UPLOADER_FILES_SUBPATH', 'files'),
             'file_naming' => env('UPLOADER_FILES_FILE_NAMING', 'fix'),

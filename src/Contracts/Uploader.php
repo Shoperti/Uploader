@@ -10,37 +10,29 @@ namespace Shoperti\Uploader\Contracts;
 interface Uploader
 {
     /**
-     * Uploads the file to the storage filesystem.
+     * Uploads a file to a filesystem disk.
      *
-     * @param string|\Symfony\Component\HttpFoundation\File\UploadedFile $resourceFile
+     * @param string                                                     $path
+     * @param string|null                                                $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function upload($resourceFile);
+    public function upload($path, $disk = null);
 
-    /**
-     * Gets a file stored in a remote location, accessible through HTTP.
+    /*
+     * Uploads a file to a filesystem disk with a name.
      *
-     * @param string $url
+     * @param string                                                     $path
+     * @param string                                                     $name
+     * @param string|null                                                $disk
      *
+     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
-     * @return \Symfony\Component\HttpFoundation\File\UploadedFile
+     * @return \Shoperti\Uploader\UploadResult
      */
-    public function getFileFromUrl($url);
-
-    /**
-     * Deletes a stored file.
-     *
-     * @param string $filePath
-     * @param string $disk
-     *
-     * @throws \Shoperti\Uploader\Exceptions\FileNotFoundException
-     *
-     * @return bool true on success, false on failure.
-     */
-    public function delete($disk, $filePath);
+    public function uploadAs($path, $name, $disk = null);
 }

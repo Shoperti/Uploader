@@ -3,6 +3,7 @@
 namespace Shoperti\Uploader;
 
 use Illuminate\Filesystem\FilesystemManager;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Shoperti\Uploader\Exceptions\InvalidConfigurationException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -39,15 +40,15 @@ class FileNameGenerator
      * Gets the file name from the uploaded file.
      *
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
-     * @param \Shoperti\Uploader\ConfigurationManager             $configurationManager
+     * @param array                                               $config
      *
      * @throws \Shoperti\Uploader\Exceptions\InvalidConfigurationException
      *
      * @return string
      */
-    public function generate(UploadedFile $uploadedFile, ConfigurationManager $configurationManager)
+    public function generate(UploadedFile $uploadedFile, $config)
     {
-        $namingStrategy = $configurationManager->setting('file_naming');
+        $namingStrategy = Arr::get($config, 'file_naming');
 
         if (!in_array($namingStrategy, ['none', 'uniqid', 'fix', 'fix_unique'])) {
             throw new InvalidConfigurationException('Invalid naming strategy');
@@ -62,7 +63,7 @@ class FileNameGenerator
         }
 
         if ('fix_unique' === $namingStrategy) {
-            $disk = $configurationManager->setting('disk');
+            $disk = Arr::get($config, 'disk');
 
             $name = $this->getSanitizedFileName($uploadedFile);
             $ext = $this->getFileExtension($uploadedFile);
