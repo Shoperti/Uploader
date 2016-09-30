@@ -5,6 +5,11 @@ namespace Shoperti\Uploader\Processors;
 use Closure;
 use InvalidArgumentException;
 
+/**
+ * This is the processor resolver class.
+ *
+ * @author Joseph Cohen <joe@shoperti.com>
+ */
 class ProcessorResolver
 {
     /**
@@ -22,7 +27,7 @@ class ProcessorResolver
     protected $resolved = [];
 
     /**
-     * Register a new processor resolver.
+     * Registers a new processor resolver.
      *
      * The processor string typically corresponds to a file extension.
      *
@@ -39,7 +44,7 @@ class ProcessorResolver
     }
 
     /**
-     * Resolver an processor instance by name.
+     * Resolvers an processor instance by name.
      *
      * @param  string  $processor
      *

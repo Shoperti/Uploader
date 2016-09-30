@@ -11,6 +11,11 @@ use Shoperti\Uploader\Processors\ProcessorResolver;
 use Shoperti\Uploader\Processors\FileProcessor;
 use Shoperti\Uploader\Processors\ImageProcessor;
 use Shoperti\Uploader\ConfigManager;
+use Shoperti\Uploader\NameGenerators\FixNameGenerator;
+use Shoperti\Uploader\NameGenerators\FixUniqueNameGenerator;
+use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;
+use Shoperti\Uploader\NameGenerators\NoneNameGenerator;
+use Shoperti\Uploader\NameGenerators\UniqidNameGenerator;
 use Laravel\Lumen\Application as LumenApplication;
 
 class UploaderServiceProvider extends ServiceProvider
@@ -44,24 +49,41 @@ class UploaderServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register any application services.
+     * Registers any application services.
      *
      * @return void
      */
     public function register()
     {
-        // $this->registerConfigManager();
+        $this->registerNameGeneratosResolver();
         $this->registerProcessorResolver();
         $this->registerBindings();
     }
 
-    public function registerConfigManager()
+    /**
+     * Registers the uplaoder processor resolver.
+     *
+     * @return void
+     */
+    public function registerNameGeneratosResolver()
     {
-        $this->app->singleton('uploader.config.manager', function (Container $app) {
-            return new ConfigManager($app['config']['uploader']);
+        $this->app->singleton('uploader.namegeneratos.resolver', function (Container $app) {
+            $resolver = new NameGeneratorResolver();
+
+            $resolver->register('none', new NoneNameGenerator());
+            $resolver->register('uniqid', new UniqidNameGenerator());
+            $resolver->register('fix', new FixNameGenerator());
+            $resolver->register('fix_unique', new FixUniqueNameGenerator($app['filesystem']));
+
+            return $resolver;
         });
     }
 
+    /**
+     * Registers the uplaoder processor resolver.
+     *
+     * @return void
+     */
     public function registerProcessorResolver()
     {
         $this->app->singleton('uploader.processor.resolver', function (Container $app) {
@@ -76,7 +98,7 @@ class UploaderServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the files processor implementation.
+     * Registers the files processor implementation.
      *
      * @param \Shoperti\Uploader\Processors\ProcessorResolver $resolver
      * @param string                                          $processor
@@ -91,7 +113,7 @@ class UploaderServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the images processor implementation.
+     * Registers the images processor implementation.
      *
      * @param \Shoperti\Uploader\Processors\ProcessorResolver $resolver
      * @param string                                          $processor
@@ -106,7 +128,7 @@ class UploaderServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the Uploader class.
+     * Registers the uploader class.
      *
      * @return void
      */
@@ -114,29 +136,26 @@ class UploaderServiceProvider extends ServiceProvider
     {
         $this->app->singleton('uploader', function (Container $app) {
             $config = $app['config']['uploader'];
-
-            $resolver = $app['uploader.processor.resolver'];
-
+            $processorResolver = $app['uploader.processor.resolver'];
+            $nameGeneratorResolver = $app['uploader.namegeneratos.resolver'];
             $filesystem = $app['filesystem'];
 
-            $nameGenerator = new FileNameGenerator($filesystem);
-
-            return new Factory($resolver, $filesystem, $nameGenerator, $config);
+            return new Factory($processorResolver, $nameGeneratorResolver, $filesystem, $config);
         });
 
         $this->app->alias('uploader', Factory::class);
         $this->app->alias('uploader', FactoryContract::class);
     }
 
-    // /**
-    //  * Get the services provided by the provider.
-    //  *
-    //  * @return string[]
-    //  */
-    // public function provides()
-    // {
-    //     return [
-    //         'uploader',
-    //     ];
-    // }
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return string[]
+     */
+    public function provides()
+    {
+        return [
+            'uploader',
+        ];
+    }
 }

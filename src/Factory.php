@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Shoperti\Uploader\Exceptions\DisallowedFileException;
 use Shoperti\Uploader\Exceptions\InvalidConfigurationException;
+use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -31,9 +32,9 @@ class Factory implements FactoryContract
     /**
      * The filename generator instance.
      *
-     * @var \Shoperti\Uploader\FileNameGenerator
+     * @var \Shoperti\Uploader\NameGenerators\NameGeneratorResolver
      */
-    protected $nameGenerator;
+    protected $generators;
 
     /**
      * The file processor instance.
@@ -49,29 +50,41 @@ class Factory implements FactoryContract
      */
     protected $filesystem;
 
+    /**
+     * The uploader config.
+     *
+     * @var array
+     */
     protected $config;
 
     /**
      * Creates a new Uploader instance.
      *
-     * @param \Shoperti\Uploader\Processors\ProcessorResolver  $processors
-     * @param \Illuminate\Contracts\Filesystem\Factory         $filesystem
-     * @param \Shoperti\Uploader\FileNameGenerator             $nameGenerator
+     * @param \Shoperti\Uploader\Processors\ProcessorResolver         $processors
+     * @param \Shoperti\Uploader\NameGenerators\NameGeneratorResolver $generators
+     * @param \Illuminate\Contracts\Filesystem\Factory                $filesystem
      *
      * @return void
      */
     public function __construct(
         ProcessorResolver $processors,
+        NameGeneratorResolver $generators,
         FilesystemFactory $filesystem,
-        FileNameGenerator $nameGenerator,
         array $config
     ) {
         $this->processors = $processors;
+        $this->generators = $generators;
         $this->filesystem = $filesystem;
-        $this->nameGenerator = $nameGenerator;
         $this->config = $config;
     }
 
+    /**
+     * Makes a new uploader instance.
+     *
+     * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
+     *
+     * @return \Shoperti\Uploader\Upload
+     */
     public function make($uploadedFile)
     {
         $file = $this->getFile($uploadedFile);
@@ -80,16 +93,25 @@ class Factory implements FactoryContract
 
         $processor = $this->processors->resolve(Arr::get($config, 'processor'));
 
+        $generator = $this->generators->resolve(Arr::get($config, 'name_generator', 'none'));
+
         return new Uploader(
             $this,
             $processor,
+            $generator,
             $this->filesystem,
-            $this->nameGenerator,
             $file,
             $config
         );
     }
 
+    /**
+     * Gets a file to process.
+     *
+     * @param  string|\Symfony\Component\HttpFoundation\File\UploadedFile $file
+     *
+     * @return \Symfony\Component\HttpFoundation\File\UploadedFile
+     */
     public function getFile($file)
     {
         if (!is_string($file)) {
@@ -194,7 +216,7 @@ class Factory implements FactoryContract
      */
     public function getConfigFromFile($uploadedFile)
     {
-        if (! $fileMimeType = $this->getMimeTypeFromAllowedFile($uploadedFile)) {
+        if (!$fileMimeType = $this->getMimeTypeFromAllowedFile($uploadedFile)) {
             throw new DisallowedFileException(
                 $uploadedFile->getClientOriginalName(),
                 $fileMimeType,
@@ -210,9 +232,7 @@ class Factory implements FactoryContract
      *
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
      *
-     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
-     *
-     * @return string
+     * @return string|null
      */
     protected function getMimeTypeFromAllowedFile($uploadedFile)
     {
@@ -221,8 +241,6 @@ class Factory implements FactoryContract
         if (!in_array($fileMimeType, Arr::get($this->config, 'blocked_mimetypes', []))) {
             return $fileMimeType;
         }
-
-        return false;
     }
 
     /**

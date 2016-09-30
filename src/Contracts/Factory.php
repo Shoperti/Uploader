@@ -9,6 +9,13 @@ namespace Shoperti\Uploader\Contracts;
  */
 interface Factory
 {
+    /**
+     * Makes a new uploader instance.
+     *
+     * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
+     *
+     * @return \Shoperti\Uploader\Upload
+     */
     public function make($uploadedFile);
 
     /**

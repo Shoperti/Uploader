@@ -11,6 +11,7 @@ use League\Flysystem\FileNotFoundException as LeagueFileNotFoundException;
 use Shoperti\Uploader\Contracts\Uploader as UploaderInterface;
 use Shoperti\Uploader\Exceptions\FileNotFoundException;
 use Shoperti\Uploader\Exceptions\RemoteFileException;
+use Shoperti\Uploader\NameGenerators\NameGeneratorInterface;
 use Shoperti\Uploader\Processors\ProcessorResolver;
 use Shoperti\Uploader\Processors\ProcessorInterface;
 use Symfony\Component\HttpFoundation\File\File;
@@ -27,18 +28,25 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class Uploader implements UploaderInterface
 {
     /**
-     * The filename generator instance.
+     * The uploader factory instance.
      *
-     * @var \Shoperti\Uploader\FileNameGenerator
+     * @var \Shoperti\Uploader\Contracts\Factory
      */
-    protected $nameGenerator;
+    protected $factory;
 
     /**
-     * The file processor instance.
+     * The processor instance.
      *
-     * @var \Shoperti\Uploader\Processors\ProcessorResolver
+     * @var \Shoperti\Uploader\Processors\ProcessorInterface
      */
-    protected $processors;
+    protected $processor;
+
+    /**
+     * The filename generator instance.
+     *
+     * @var \Shoperti\Uploader\NameGenerators\NameGeneratorInterface
+     */
+    protected $generator;
 
     /**
      * The laravel filesystem instance.
@@ -50,26 +58,27 @@ class Uploader implements UploaderInterface
     /**
      * Creates a new Uploader instance.
      *
-     * @param \Shoperti\Uploader\Factory                       $factory
-     * @param \Shoperti\Uploader\Processors\ProcessorInterface $processor
-     * @param \Illuminate\Contracts\Filesystem\Factory         $filesystem
-     * @param \Shoperti\Uploader\FileNameGenerator             $nameGenerator
-     * @param array                                            $config
+     * @param \Shoperti\Uploader\Factory                             $factory
+     * @param \Shoperti\Uploader\Processors\ProcessorInterface       $processor
+     * @param \Illuminate\Contracts\Filesystem\Factory               $filesystem
+     * @param \Shoperti\Uploader\NameGenerators\NameGeneretorResolver $generator
+     * @param \Symfony\Component\HttpFoundation\File\UploadedFile    $uploadedFile
+     * @param array                                                  $config
      *
      * @return void
      */
     public function __construct(
         Factory $factory,
         ProcessorInterface $processor,
+        NameGeneratorInterface $generator,
         FilesystemFactory $filesystem,
-        FileNameGenerator $nameGenerator,
-        $uploadedFile,
+        UploadedFile $uploadedFile,
         array $config
     ) {
         $this->factory = $factory;
         $this->processor = $processor;
         $this->filesystem = $filesystem;
-        $this->nameGenerator = $nameGenerator;
+        $this->generator = $generator;
         $this->uploadedFile = $uploadedFile;
         $this->config = $config;
     }
@@ -89,13 +98,15 @@ class Uploader implements UploaderInterface
     {
         $processedFile = $this->processor->process($this->uploadedFile, $this->config);
 
-        $filename = $this->nameGenerator->generate($this->uploadedFile, $this->config);
+        $basePath = implode(array_filter([
+            $path, Arr::get($this->config, 'subpath', '')
+        ]), '/');
+
+        $generatedFilename = $this->generator->generate($basePath.'/'.$this->uploadedFile->getClientOriginalName(), $this->config);
 
         $disk = $disk ?: Arr::get($this->config, 'disk');
 
-        $uploadPath = implode(array_filter([
-            $path, Arr::get($this->config, 'subpath', ''), $filename
-        ]), '/');
+        $uploadPath = $basePath.'/'.$generatedFilename;
 
         try {
             // put() may throw an \InvalidArgumentException
@@ -113,7 +124,7 @@ class Uploader implements UploaderInterface
             $wasMoved,
             $this->uploadedFile,
             $disk,
-            $filename,
+            $generatedFilename,
             $url,
             $path['dirname'],
             [],
@@ -137,7 +148,7 @@ class Uploader implements UploaderInterface
     {
         $processedFile = $this->processor->process($this->uploadedFile, $this->config);
 
-        $filename = $this->nameGenerator->generate($this->uploadedFile, $this->config);
+        $filename = $this->generator->generate($this->uploadedFile, $this->config);
 
         $disk = $disk ?: Arr::get($this->config, 'disk');
 

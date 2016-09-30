@@ -6,8 +6,21 @@ use Illuminate\Support\Arr;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManagerStatic as ImageManager;
 
+/**
+ * This is the image processor class.
+ *
+ * @author Joseph Cohen <joe@shoperti.com>
+ */
 class ImageProcessor extends Processor implements ProcessorInterface
 {
+    /**
+     * Process a file.
+     *
+     * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $file
+     * @param  array                                               $config
+     *
+     * @return sting
+     */
     public function process($file, array $config = [])
     {
         $imageWidth = Arr::get($config, 'image_resize_max_width');
