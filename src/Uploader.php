@@ -4,12 +4,16 @@ namespace Shoperti\Uploader;
 
 use ErrorException;
 use Exception;
+use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
-use Intervention\Image\Image;
 use League\Flysystem\FileNotFoundException as LeagueFileNotFoundException;
 use Shoperti\Uploader\Contracts\Uploader as UploaderInterface;
 use Shoperti\Uploader\Exceptions\FileNotFoundException;
 use Shoperti\Uploader\Exceptions\RemoteFileException;
+use Shoperti\Uploader\NameGenerators\NameGeneratorInterface;
+use Shoperti\Uploader\Processors\ProcessorResolver;
+use Shoperti\Uploader\Processors\ProcessorInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -19,207 +23,160 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * The upload files class.
  *
  * @author Arturo Rodríguez <arturo@shoperti.com>
+ * @author Joseph Cohen <joe@shoperti.com>
  */
 class Uploader implements UploaderInterface
 {
     /**
-     * The configuration manager instance.
+     * The uploader factory instance.
      *
-     * @var \Shoperti\Uploader\ConfigurationManager
+     * @var \Shoperti\Uploader\Contracts\Factory
      */
-    protected $configurationManager;
+    protected $factory;
+
+    /**
+     * The processor instance.
+     *
+     * @var \Shoperti\Uploader\Processors\ProcessorInterface
+     */
+    protected $processor;
 
     /**
      * The filename generator instance.
      *
-     * @var \Shoperti\Uploader\FileNameGenerator
+     * @var \Shoperti\Uploader\NameGenerators\NameGeneratorInterface
      */
-    protected $fileNameGenerator;
+    protected $generator;
 
     /**
-     * The file processor instance.
-     *
-     * @var \Shoperti\Uploader\FileProcessor
-     */
-    protected $fileProcessor;
-
-    /**
-     * Laravel storage instance.
+     * The laravel filesystem instance.
      *
      * @var \Illuminate\Contracts\Filesystem\Factory
      */
-    protected $filesystemFactory;
+    protected $filesystem;
 
     /**
      * Creates a new Uploader instance.
      *
-     * @param \Shoperti\Uploader\ConfigurationManager  $configurationManager
-     * @param \Shoperti\Uploader\FileNameGenerator     $fileNameGenerator
-     * @param \Shoperti\Uploader\FileProcessor         $fileProcessor
-     * @param \Illuminate\Contracts\Filesystem\Factory $filesystemFactory
+     * @param \Shoperti\Uploader\Factory                             $factory
+     * @param \Shoperti\Uploader\Processors\ProcessorInterface       $processor
+     * @param \Illuminate\Contracts\Filesystem\Factory               $filesystem
+     * @param \Shoperti\Uploader\NameGenerators\NameGeneretorResolver $generator
+     * @param \Symfony\Component\HttpFoundation\File\UploadedFile    $uploadedFile
+     * @param array                                                  $config
      *
      * @return void
      */
     public function __construct(
-        ConfigurationManager $configurationManager,
-        FileNameGenerator $fileNameGenerator,
-        FileProcessor $fileProcessor,
-        FilesystemFactory $filesystemFactory
+        Factory $factory,
+        ProcessorInterface $processor,
+        NameGeneratorInterface $generator,
+        FilesystemFactory $filesystem,
+        UploadedFile $uploadedFile,
+        array $config
     ) {
-        $this->configurationManager = $configurationManager;
-        $this->fileNameGenerator = $fileNameGenerator;
-        $this->fileProcessor = $fileProcessor;
-        $this->filesystemFactory = $filesystemFactory;
+        $this->factory = $factory;
+        $this->processor = $processor;
+        $this->filesystem = $filesystem;
+        $this->generator = $generator;
+        $this->uploadedFile = $uploadedFile;
+        $this->config = $config;
     }
 
     /**
-     * Uploads the file to the storage filesystem.
+     * Uploads a file to a filesystem disk.
      *
-     * @param string|\Symfony\Component\HttpFoundation\File\UploadedFile $resourceFile
+     * @param string                                                     $path
+     * @param string|null                                                $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function upload($resourceFile)
+    public function upload($path, $disk = null)
     {
-        if (is_string($resourceFile)) {
-            // this may throw a RemoteFileException
-            $resourceFile = $this->getFileFromUrl($resourceFile);
-        }
+        $processedFile = $this->processor->process($this->uploadedFile, $this->config);
 
-        // may throw a DisallowedFileException, which should be caught on implementation
-        // may throw an InvalidConfigurationException, which indicates a missconfiguration
-        $this->configurationManager->resolve($resourceFile);
+        $basePath = implode(array_filter([
+            $path, Arr::get($this->config, 'subpath', '')
+        ]), '/');
 
-        list($file, $attributes) = $this->fileProcessor->process($resourceFile, $this->configurationManager);
+        $generatedFilename = $this->generator->generate($basePath.'/'.$this->uploadedFile->getClientOriginalName(), $this->config);
 
-        $name = $this->fileNameGenerator->generate($resourceFile, $this->configurationManager);
+        $disk = $disk ?: Arr::get($this->config, 'disk');
+
+        $uploadPath = $basePath.'/'.$generatedFilename;
 
         try {
-            $wasMoved = $this->moveToStorage($file, $name);
+            // put() may throw an \InvalidArgumentException
+            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile);
             $e = null;
         } catch (Exception $e) {
             $wasMoved = false;
         }
 
-        $url = $wasMoved ?
-            $this->filesystemFactory->disk($this->configurationManager->setting('disk'))->url(
-                "{$this->configurationManager->subpathSetting()}{$name}"
-            )
-            : null;
+        $url = $wasMoved ? $this->filesystem->disk($disk)->url($uploadPath) : null;
+
+        $path = pathinfo($uploadPath);
 
         return new UploadResult(
             $wasMoved,
-            $resourceFile,
+            $this->uploadedFile,
+            $disk,
+            $generatedFilename,
             $url,
-            $this->configurationManager->getResolvedConfiguration(),
-            $name,
-            $attributes,
+            $path['dirname'],
+            [],
             $e
         );
     }
 
-    /**
-     * Gets a file stored in a remote location, accessible through HTTP.
+    /*
+     * Uploads a file to a filesystem disk with a name.
      *
-     * @param string $url
+     * @param string                                                     $path
+     * @param string                                                     $name
+     * @param string|null                                                $disk
      *
+     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
-     * @return \Symfony\Component\HttpFoundation\File\UploadedFile
+     * @return \Shoperti\Uploader\UploadResult
      */
-    public function getFileFromUrl($url)
+    public function uploadAs($path, $name, $disk = null)
     {
-        $encodedUrl = str_replace(' ', '%20', $url);
-        $tmpFileName = tempnam(sys_get_temp_dir(), 's-down-');
+        $processedFile = $this->processor->process($this->uploadedFile, $this->config);
+
+        $filename = $this->generator->generate($this->uploadedFile, $this->config);
+
+        $disk = $disk ?: Arr::get($this->config, 'disk');
+
+        $uploadPath = implode(array_filter([
+            $path, Arr::get($this->config, 'subpath', ''), $filename
+        ]), '/');
 
         try {
-            file_put_contents($tmpFileName, fopen($encodedUrl, 'r'));
-        } catch (ErrorException $e) {
-            throw new RemoteFileException($encodedUrl, sprintf("Unable to get file from '%s'", $encodedUrl));
+            // put() may throw an \InvalidArgumentException
+            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile);
+            $e = null;
+        } catch (Exception $e) {
+            $wasMoved = false;
         }
 
-        /** @var \Symfony\Component\HttpFoundation\File\File $file */
-        $file = new File($tmpFileName, false);
-        $fileName = $this->getRemoteFileName($http_response_header, $url);
+        $url = $wasMoved ? $this->filesystem->disk($disk)->url($uploadPath) : null;
 
-        /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile */
-        $uploadedFile = new UploadedFile($tmpFileName, $fileName, $file->getMimeType(), $file->getSize());
+        $path = pathinfo($uploadPath);
 
-        return $uploadedFile;
-    }
-
-    /**
-     * Deletes a stored file.
-     *
-     * @param string $filePath
-     * @param string $disk
-     *
-     * @throws \Shoperti\Uploader\Exceptions\FileNotFoundException
-     *
-     * @return bool true on success, false on failure.
-     */
-    public function delete($disk, $filePath)
-    {
-        try {
-            return $this->filesystemFactory->disk($disk)->delete($filePath);
-        } catch (LeagueFileNotFoundException $e) {
-            throw new FileNotFoundException(
-                $e->getPath(),
-                $e->getCode(),
-                $e
-            );
-        }
-    }
-
-    /**
-     * Moves the uploaded file to the filesystem disk location.
-     *
-     * @param \Illuminate\Filesystem\Filesystem|Image $file
-     * @param string                                  $filename
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return bool
-     */
-    protected function moveToStorage($file, $filename)
-    {
-        $disk = $this->configurationManager->setting('disk');
-        $uploadPath = "{$this->configurationManager->subpathSetting()}{$filename}";
-
-        // put() may throw an \InvalidArgumentException
-        return $this->filesystemFactory->disk($disk)->put($uploadPath, (string) $file);
-    }
-
-    /**
-     * Gets the name from a downloaded remote file searching int the headers and falling back using the URL.
-     *
-     * @param array  $headers
-     * @param string $url
-     *
-     * @return string
-     */
-    protected function getRemoteFileName($headers, $url)
-    {
-        // try to see if the server returned the file name to save
-        foreach ($headers as $header) {
-            if (strpos(strtolower($header), 'content-disposition') !== false) {
-                $name = explode('=', $header);
-                if (isset($name[1])) {
-                    return trim($name[1], '";\'');
-                }
-            }
-        }
-
-        // get the name from the url
-        $name = preg_replace('/\\?.*/', '', $url);
-
-        if (false !== ($pos = strpos($name, '#'))) {
-            $name = substr($name, 0, $pos);
-        }
-
-        return str_replace(' ', '-', basename($name));
+        return new UploadResult(
+            $wasMoved,
+            $this->uploadedFile,
+            $disk,
+            $filename,
+            $url,
+            $path['dirname'],
+            [],
+            $e
+        );
     }
 }

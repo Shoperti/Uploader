@@ -91,30 +91,32 @@ class UploadResult
      *
      * @param bool                                                $isUploaded
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
-     * @param string|null                                         $url
-     * @param array                                               $configuration
+     * @param string                                              $disk
      * @param string                                              $name
+     * @param string|null                                         $url
+     * @param string                                              $subpath
      * @param array                                               $attributes
      * @param \Exception|null                                     $exception
      */
     public function __construct(
         $isUploaded,
         $uploadedFile,
-        $url,
-        $configuration,
+        $disk,
         $name,
+        $url,
+        $subpath,
         $attributes,
         $exception = null
     ) {
         $this->isUploaded = $isUploaded;
         $this->uploadedFile = $uploadedFile;
-        $this->url = $url;
-        $this->name = $name;
         $this->originalName = $uploadedFile->getClientOriginalName();
         $this->mimeType = $uploadedFile->getMimeType();
         $this->size = $uploadedFile->getSize();
-        $this->disk = $configuration['disk'];
-        $this->subpath = $configuration['subpath'];
+        $this->name = $name;
+        $this->disk = $disk;
+        $this->url = $url;
+        $this->subpath = $subpath;
         $this->attributes = $attributes;
         $this->exception = $exception;
     }

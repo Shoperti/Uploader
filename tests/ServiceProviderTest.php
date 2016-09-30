@@ -2,10 +2,10 @@
 
 namespace Shoperti\Tests\Uploader;
 
-use Shoperti\Uploader\Contracts\Uploader as UploaderContract;
+use Shoperti\Uploader\Contracts\Factory as FactoryContract;
 use GrahamCampbell\Manager\AbstractManager;
 use GrahamCampbell\TestBenchCore\ServiceProviderTrait;
-use Shoperti\Uploader\Uploader;
+use Shoperti\Uploader\Factory;
 
 /**
  * This is the service provider test class.
@@ -18,12 +18,12 @@ class ServiceProviderTest extends AbstractTestCase
 
     public function testUploaderContractIsInjectable()
     {
-        $this->assertIsInjectable(UploaderContract::class);
+        $this->assertIsInjectable(FactoryContract::class);
     }
 
     public function testBindings()
     {
-        $this->assertInstanceOf(Uploader::class, $this->app->make('uploader'));
-        $this->assertInstanceOf(Uploader::class, $this->app->make(UploaderContract::class));
+        $this->assertInstanceOf(Factory::class, $this->app->make('uploader'));
+        $this->assertInstanceOf(Factory::class, $this->app->make(FactoryContract::class));
     }
 }
