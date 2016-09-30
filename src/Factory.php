@@ -82,14 +82,19 @@ class Factory implements FactoryContract
      * Makes a new uploader instance.
      *
      * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
+     * @param  string                                              $conn
      *
      * @return \Shoperti\Uploader\Upload
      */
-    public function make($uploadedFile)
+    public function make($uploadedFile, $conn = null)
     {
         $file = $this->getFile($uploadedFile);
 
-        $config = $this->getConfigFromFile($uploadedFile);
+        if ($conn) {
+            $config = Arr::get($this->config['configurations'], $conn);
+        } else {
+            $config = $this->getConfigFromFile($uploadedFile);
+        }
 
         $processor = $this->processors->resolve(Arr::get($config, 'processor'));
 
