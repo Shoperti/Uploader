@@ -19,8 +19,6 @@ class NoneNameGenerator implements NameGeneratorInterface
      */
     public function generate($filePath, array $config = [])
     {
-        $pathInfo = pathinfo($filePath);
-
-        return Arr::get($pathInfo, 'basename');
+        return basename($filePath);
     }
 }

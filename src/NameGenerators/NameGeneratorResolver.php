@@ -42,7 +42,7 @@ class NameGeneratorResolver
     }
 
     /**
-     * Resolvers an generator instance by name.
+     * Resolves a generator instance by name.
      *
      * @param  string  $generator
      *
@@ -60,6 +60,6 @@ class NameGeneratorResolver
             return $this->resolved[$generator] = $this->resolvers[$generator];
         }
 
-        throw new InvalidArgumentException("Nme generator $generator not found.");
+        throw new InvalidArgumentException("Name generator $generator not found.");
     }
 }
