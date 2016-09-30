@@ -10,7 +10,6 @@ use Shoperti\Uploader\Contracts\Factory as FactoryContract;
 use Shoperti\Uploader\Processors\ProcessorResolver;
 use Shoperti\Uploader\Processors\FileProcessor;
 use Shoperti\Uploader\Processors\ImageProcessor;
-use Shoperti\Uploader\ConfigManager;
 use Shoperti\Uploader\NameGenerators\FixNameGenerator;
 use Shoperti\Uploader\NameGenerators\FixUniqueNameGenerator;
 use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;

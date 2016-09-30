@@ -12,7 +12,7 @@
         "illuminate/support": "5.0.*|5.1.*|5.2.*|5.3.*",
         "illuminate/filesystem": "5.0.*|5.1.*|5.2.*|5.3.*",
         "illuminate/http": "5.0.*|5.1.*|5.2.*|5.3.*",
-        "intervention/image": "^2.3.7"
+        "intervention/image": "^2.3.8"
     },
     "require-dev": {
         "graham-campbell/testbench": "^3.1",
