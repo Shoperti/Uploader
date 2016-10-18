@@ -5,7 +5,7 @@ namespace Shoperti\Uploader\Exceptions;
 use Exception;
 
 /**
- * This is the remove file exception class.
+ * This is the remote file exception class.
  *
  * @author Arturo Rodrígez <arturo@shoperti.com>
  */

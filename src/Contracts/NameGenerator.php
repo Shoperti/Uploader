@@ -1,21 +1,21 @@
 <?php
 
-namespace Shoperti\Uploader\NameGenerators;
+namespace Shoperti\Uploader\Contracts;
 
 /**
  * This is the name generator interface class.
  *
  * @author Joseph Cohen <joe@shoperti.com>
  */
-interface NameGeneratorInterface
+interface NameGenerator
 {
     /**
      * Generates a file name.
      *
-     * @param  string $filePath
-     * @param  array  $config
+     * @param string $filePath
+     * @param array  $config
      *
-     * @return sting
+     * @return string
      */
     public function generate($filePath, array $config = []);
 }

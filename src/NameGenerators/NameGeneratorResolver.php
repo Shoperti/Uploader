@@ -7,7 +7,6 @@ use InvalidArgumentException;
 /**
  * This is the name generator resolver class.
  *
- * @author Arturo Rodríguez <arturo@shoperti.com>
  * @author Joseph Cohen <joe@shoperti.com>
  */
 class NameGeneratorResolver
@@ -29,8 +28,8 @@ class NameGeneratorResolver
     /**
      * Registers a new name generator resolver.
      *
-     * @param  string                                                   $generator
-     * @param  \Shoperti\Uploader\NameGenerators\NameGeneratorInterface $resolver
+     * @param string                                     $generator
+     * @param \Shoperti\Uploader\Contracts\NameGenerator $resolver
      *
      * @return void
      */
@@ -44,11 +43,11 @@ class NameGeneratorResolver
     /**
      * Resolves a generator instance by name.
      *
-     * @param  string  $generator
+     * @param string $generator
      *
      * @throws \InvalidArgumentException
      *
-     * @return \Shoperti\Uploader\NameGenerators\NameGeneratorInterface
+     * @return \Shoperti\Uploader\Contracts\NameGenerator
      */
     public function resolve($generator)
     {

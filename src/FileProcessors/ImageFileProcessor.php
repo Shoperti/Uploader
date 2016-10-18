@@ -1,25 +1,26 @@
 <?php
 
-namespace Shoperti\Uploader\Processors;
+namespace Shoperti\Uploader\FileProcessors;
 
 use Illuminate\Support\Arr;
-use Intervention\Image\Image;
 use Intervention\Image\ImageManagerStatic as ImageManager;
+use Shoperti\Uploader\Contracts\FileProcessor;
 
 /**
  * This is the image processor class.
  *
+ * @author Arturo Rodríguez <arturo@shoperti.com>
  * @author Joseph Cohen <joe@shoperti.com>
  */
-class ImageProcessor extends Processor implements ProcessorInterface
+class ImageFileProcessor extends BaseFileProcessor implements FileProcessor
 {
     /**
-     * Process a file.
+     * Processes a file.
      *
-     * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $file
-     * @param  array                                               $config
+     * @param \Symfony\Component\HttpFoundation\File\UploadedFile $file
+     * @param array                                               $config
      *
-     * @return sting
+     * @return string
      */
     public function process($file, array $config = [])
     {

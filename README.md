@@ -25,7 +25,7 @@ Add to composer
 ```
 
 
-and register the package in one of your providers
+Register the package in one of your providers
 
 ```php
     public function register()
@@ -36,7 +36,7 @@ and register the package in one of your providers
 
 ## Configuration
 
-Out of the box you can configure it through the .env file using these settings:
+You can configure it through the .env file using these settings:
 
 ```
 UPLOADER_FILES_DISK=s3
@@ -55,51 +55,66 @@ UPLOADER_IMAGES_RESIZE_MEMORY_LIMIT=128M
 
 ## Use
 
-Import the Shoperti Uploader in your controller
-
 ```php
-use Shoperti\Uploader\Contracts\Uploader;
-```
+<?php
 
-inject the object either in the constructor or in the action method
+namespace App\Http\Controllers;
 
-```php
-public function persist(..., Uploader $uploader)
-```
+// Import the Shoperti Uploader Manager in your controller
+use Shoperti\Uploader\Contracts\UploaderManager;
+use Shoperti\Uploader\Exceptions\DisallowedFileException;
+use Shoperti\Uploader\Exceptions\RemoteFileException;
 
-After getting the file from the request input, call the `upload()` method
-to process the file with the uploader.
+// To upload or delete a file, just inject the manager either in the constructor
+// or in the action method
 
-```php
-try {
+class Controller extends BaseController
+{
+   /**
+    * Uploads a file.
+    *
+    * @param \Shoperti\Uploader\Contracts\UploaderManager $uploaderManager
+    */
+    public function upload(UploaderManager $uploaderManager)
+    {
+        try {
+            /** @var \Shoperti\Uploader\UploadResult uploadResult */
+            $uploadResult = $uploaderManager
 
-    // $file may be an UploadedFile object sent through a file input or
-    // an URL string sent using a text input
+                // generate an Uploader through the manager
+                // using the uploaded file or the file URL as argument
+                ->make(\Request::file('file') ?: \Request::input('file'))
 
-    /** @var \Shoperti\Uploader\UploadResult $uploadResult */
-    $uploadResult = $uploader->upload($file);
+                // then call the upload() method with the location path as argument
+                ->upload($path = null, $disk = null);
 
-} catch (\Shoperti\Uploader\Exceptions\DisallowedFileException $dfe) {
+        } catch (DisallowedFileException $dfe) {
 
-    // If the uploaded file has a disallowed mime-type
+            // If the uploaded file has a disallowed mime-type
 
-} catch (\Shoperti\Uploader\Exceptions\RemoteFileException $rfe) {
+        } catch (RemoteFileException $rfe) {
 
-    // If the file input was a file-url string which cannot be fetched
+            // If the file input was a file-url string which cannot be fetched
 
+        }
+    }
+
+   /**
+    * Deletes a file.
+    *
+    * @param \Shoperti\Uploader\Contracts\UploaderManager $uploaderManager
+    */
+    public function delete(UploaderManager $uploaderManager)
+    {
+        $uploaderManager
+            ->delete($disk = 's3', $filepath = \Request::input('file'))
+    }
 }
 ```
-
-For deleting an uploaded file you can use the `delete()` method
-
-```php
-$uploader->delete(\Request::input('file'), 's3')
-```
-
-The `upload()` method will return a `\Shoperti\Upload\UploadResult` instance with the upload result.
 
 * _Please refer to the [`UploadResult` implementation](src/UploadResult.php) for more details._
 
 
 ### TODO
+
 [ ] Test functionality

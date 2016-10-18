@@ -3,36 +3,37 @@
 namespace Shoperti\Uploader\Contracts;
 
 /**
- * This is the uploader inteface class.
+ * This is the uploader interface class.
  *
  * @author Arturo Rodrígez <arturo@shoperti.com>
+ * @author Joseph Cohen <joe@shoperti.com>
  */
 interface Uploader
 {
     /**
      * Uploads a file to a filesystem disk.
      *
-     * @param string                                                     $path
-     * @param string|null                                                $disk
+     * @param string|null $path
+     * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function upload($path, $disk = null);
+    public function upload($path = null, $disk = null);
 
     /*
      * Uploads a file to a filesystem disk with a name.
      *
-     * @param string                                                     $path
-     * @param string                                                     $name
-     * @param string|null                                                $disk
+     * @param string      $name
+     * @param string|null $path
+     * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function uploadAs($path, $name, $disk = null);
+    public function uploadAs($name, $path = null, $disk = null);
 }

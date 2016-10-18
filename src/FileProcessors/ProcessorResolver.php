@@ -1,6 +1,6 @@
 <?php
 
-namespace Shoperti\Uploader\Processors;
+namespace Shoperti\Uploader\FileProcessors;
 
 use Closure;
 use InvalidArgumentException;
@@ -46,11 +46,11 @@ class ProcessorResolver
     /**
      * Resolvers an processor instance by name.
      *
-     * @param  string  $processor
+     * @param string $processor
      *
      * @throws \InvalidArgumentException
      *
-     * @return \Shoperti\Uploader\Processors\ProcessorInterface
+     * @return \Shoperti\Uploader\Contracts\FileProcessor
      */
     public function resolve($processor)
     {

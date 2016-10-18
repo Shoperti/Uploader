@@ -2,19 +2,12 @@
 
 namespace Shoperti\Uploader;
 
-use ErrorException;
 use Exception;
-use Illuminate\Support\Str;
-use Illuminate\Support\Arr;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
-use League\Flysystem\FileNotFoundException as LeagueFileNotFoundException;
+use Illuminate\Support\Arr;
 use Shoperti\Uploader\Contracts\Uploader as UploaderInterface;
-use Shoperti\Uploader\Exceptions\FileNotFoundException;
-use Shoperti\Uploader\Exceptions\RemoteFileException;
-use Shoperti\Uploader\NameGenerators\NameGeneratorInterface;
-use Shoperti\Uploader\Processors\ProcessorResolver;
-use Shoperti\Uploader\Processors\ProcessorInterface;
-use Symfony\Component\HttpFoundation\File\File;
+use Shoperti\Uploader\Contracts\NameGenerator;
+use Shoperti\Uploader\Contracts\FileProcessor;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
@@ -28,23 +21,16 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class Uploader implements UploaderInterface
 {
     /**
-     * The uploader factory instance.
-     *
-     * @var \Shoperti\Uploader\Contracts\Factory
-     */
-    protected $factory;
-
-    /**
      * The processor instance.
      *
-     * @var \Shoperti\Uploader\Processors\ProcessorInterface
+     * @var \Shoperti\Uploader\Contracts\FileProcessor
      */
-    protected $processor;
+    protected $fileProcessor;
 
     /**
      * The filename generator instance.
      *
-     * @var \Shoperti\Uploader\NameGenerators\NameGeneratorInterface
+     * @var \Shoperti\Uploader\Contracts\NameGenerator
      */
     protected $generator;
 
@@ -56,27 +42,31 @@ class Uploader implements UploaderInterface
     protected $filesystem;
 
     /**
+     * The uploader config.
+     *
+     * @var array
+     */
+    protected $config;
+
+    /**
      * Creates a new Uploader instance.
      *
-     * @param \Shoperti\Uploader\Factory                             $factory
-     * @param \Shoperti\Uploader\Processors\ProcessorInterface       $processor
-     * @param \Illuminate\Contracts\Filesystem\Factory               $filesystem
-     * @param \Shoperti\Uploader\NameGenerators\NameGeneretorResolver $generator
-     * @param \Symfony\Component\HttpFoundation\File\UploadedFile    $uploadedFile
-     * @param array                                                  $config
+     * @param \Shoperti\Uploader\Contracts\FileProcessor          $fileProcessor
+     * @param \Illuminate\Contracts\Filesystem\Factory            $filesystem
+     * @param \Shoperti\Uploader\Contracts\NameGenerator          $generator
+     * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
+     * @param array                                               $config
      *
      * @return void
      */
     public function __construct(
-        Factory $factory,
-        ProcessorInterface $processor,
-        NameGeneratorInterface $generator,
+        FileProcessor $fileProcessor,
+        NameGenerator $generator,
         FilesystemFactory $filesystem,
         UploadedFile $uploadedFile,
         array $config
     ) {
-        $this->factory = $factory;
-        $this->processor = $processor;
+        $this->fileProcessor = $fileProcessor;
         $this->filesystem = $filesystem;
         $this->generator = $generator;
         $this->uploadedFile = $uploadedFile;
@@ -86,17 +76,17 @@ class Uploader implements UploaderInterface
     /**
      * Uploads a file to a filesystem disk.
      *
-     * @param string                                                     $path
-     * @param string|null                                                $disk
+     * @param string|null $path
+     * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function upload($path, $disk = null)
+    public function upload($path = null, $disk = null)
     {
-        $processedFile = $this->processor->process($this->uploadedFile, $this->config);
+        $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
         $basePath = implode(array_filter([
             $path, Arr::get($this->config, 'subpath', '')
@@ -135,18 +125,18 @@ class Uploader implements UploaderInterface
     /*
      * Uploads a file to a filesystem disk with a name.
      *
-     * @param string                                                     $path
-     * @param string                                                     $name
-     * @param string|null                                                $disk
+     * @param string      $name
+     * @param string|null $path
+     * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function uploadAs($path, $name, $disk = null)
+    public function uploadAs($name, $path = null, $disk = null)
     {
-        $processedFile = $this->processor->process($this->uploadedFile, $this->config);
+        $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
         $filename = $this->generator->generate($this->uploadedFile, $this->config);
 

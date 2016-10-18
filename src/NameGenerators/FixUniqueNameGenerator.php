@@ -4,14 +4,15 @@ namespace Shoperti\Uploader\NameGenerators;
 
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
+use Shoperti\Uploader\Contracts\NameGenerator;
 
 /**
  * This is the fix unique name generator class.
  *
+ * @author Arturo Rodríguez <arturo@shoperti.com>
  * @author Joseph Cohen <joe@shoperti.com>
  */
-class FixUniqueNameGenerator implements NameGeneratorInterface
+class FixUniqueNameGenerator extends FixNameGenerator implements NameGenerator
 {
     /**
      * The laravel storage instance.
@@ -35,10 +36,10 @@ class FixUniqueNameGenerator implements NameGeneratorInterface
     /**
      * Generates a file name.
      *
-     * @param  string $filePath
-     * @param  array  $config
+     * @param string $filePath
+     * @param array  $config
      *
-     * @return sting
+     * @return string
      */
     public function generate($filePath, array $config = [])
     {
@@ -64,17 +65,5 @@ class FixUniqueNameGenerator implements NameGeneratorInterface
         }
 
         return "{$name}.{$extension}";
-    }
-
-    /**
-     * Extracts and sanitizes the name (without extension) of the uploaded file.
-     *
-     * @param string $filename
-     *
-     * @return string
-     */
-    protected function getSanitizedFileName($filenane)
-    {
-        return preg_replace('/_+/', '_', preg_replace("/[^a-z0-9_\-\.\,\+\*\(\)$']/i", '_', Str::ascii($filenane)));
     }
 }
