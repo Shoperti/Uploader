@@ -32,7 +32,7 @@ class Uploader implements UploaderInterface
      *
      * @var \Shoperti\Uploader\Contracts\NameGenerator
      */
-    protected $generator;
+    protected $nameGenerator;
 
     /**
      * The laravel filesystem instance.
@@ -53,7 +53,7 @@ class Uploader implements UploaderInterface
      *
      * @param \Shoperti\Uploader\Contracts\FileProcessor          $fileProcessor
      * @param \Illuminate\Contracts\Filesystem\Factory            $filesystem
-     * @param \Shoperti\Uploader\Contracts\NameGenerator          $generator
+     * @param \Shoperti\Uploader\Contracts\NameGenerator          $nameGenerator
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
      * @param array                                               $config
      *
@@ -61,14 +61,14 @@ class Uploader implements UploaderInterface
      */
     public function __construct(
         FileProcessor $fileProcessor,
-        NameGenerator $generator,
+        NameGenerator $nameGenerator,
         FilesystemFactory $filesystem,
         UploadedFile $uploadedFile,
         array $config
     ) {
         $this->fileProcessor = $fileProcessor;
         $this->filesystem = $filesystem;
-        $this->generator = $generator;
+        $this->nameGenerator = $nameGenerator;
         $this->uploadedFile = $uploadedFile;
         $this->config = $config;
     }
@@ -76,7 +76,7 @@ class Uploader implements UploaderInterface
     /**
      * Uploads a file to a filesystem disk.
      *
-     * @param string|null $path
+     * @param string      $path
      * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
@@ -92,7 +92,7 @@ class Uploader implements UploaderInterface
             $path, Arr::get($this->config, 'subpath', '')
         ]), '/');
 
-        $generatedFilename = $this->generator->generate($basePath.'/'.$this->uploadedFile->getClientOriginalName(), $this->config);
+        $generatedFilename = $this->nameGenerator->generate($basePath.'/'.$this->uploadedFile->getClientOriginalName(), $this->config);
 
         $disk = $disk ?: Arr::get($this->config, 'disk');
 
@@ -125,8 +125,8 @@ class Uploader implements UploaderInterface
     /*
      * Uploads a file to a filesystem disk with a name.
      *
+     * @param string      $path
      * @param string      $name
-     * @param string|null $path
      * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
@@ -134,11 +134,11 @@ class Uploader implements UploaderInterface
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function uploadAs($name, $path = null, $disk = null)
+    public function uploadAs($path, $name, $disk = null)
     {
         $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
-        $filename = $this->generator->generate($this->uploadedFile, $this->config);
+        $filename = $this->nameGenerator->generate($this->uploadedFile, $this->config);
 
         $disk = $disk ?: Arr::get($this->config, 'disk');
 

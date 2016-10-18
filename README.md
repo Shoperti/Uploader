@@ -86,7 +86,7 @@ class Controller extends BaseController
                 ->make(\Request::file('file') ?: \Request::input('file'))
 
                 // then call the upload() method with the location path as argument
-                ->upload($path = null, $disk = null);
+                ->upload($path = 'my_files', $disk = null);
 
         } catch (DisallowedFileException $dfe) {
 

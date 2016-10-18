@@ -2,14 +2,14 @@
 
 namespace Shoperti\Uploader\FileProcessors;
 
-use Shoperti\Uploader\Contracts\FileProcessor as FileProcessorInterface;
+use Shoperti\Uploader\Contracts\FileProcessor;
 
 /**
  * This is the file processor class.
  *
  * @author Joseph Cohen <joe@shoperti.com>
  */
-class GenericFileProcessor extends BaseFileProcessor implements FileProcessorInterface
+class GenericFileProcessor extends BaseFileProcessor implements FileProcessor
 {
     /**
      * Processes a file.

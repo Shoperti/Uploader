@@ -13,7 +13,7 @@ interface Uploader
     /**
      * Uploads a file to a filesystem disk.
      *
-     * @param string|null $path
+     * @param string      $path
      * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
@@ -21,13 +21,13 @@ interface Uploader
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function upload($path = null, $disk = null);
+    public function upload($path, $disk = null);
 
     /*
      * Uploads a file to a filesystem disk with a name.
      *
+     * @param string      $path
      * @param string      $name
-     * @param string|null $path
      * @param string|null $disk
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
@@ -35,5 +35,5 @@ interface Uploader
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function uploadAs($name, $path = null, $disk = null);
+    public function uploadAs($path, $name, $disk = null);
 }
