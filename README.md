@@ -11,14 +11,6 @@ Note: For auto orientation you must have a PHP installation that supports readin
 Add to composer
 
 ```json
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/Shoperti/Uploader"
-        }
-    ],
-    ...
-
     "require": {
         "shoperti/uploader": "dev-master"
     },
