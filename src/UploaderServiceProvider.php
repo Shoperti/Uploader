@@ -5,11 +5,10 @@ namespace Shoperti\Uploader;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Application as LaravelApplication;
 use Illuminate\Support\ServiceProvider;
-use Shoperti\Uploader\Contracts\Uploader as UploaderContract;
-use Shoperti\Uploader\Contracts\Factory as FactoryContract;
-use Shoperti\Uploader\Processors\ProcessorResolver;
-use Shoperti\Uploader\Processors\FileProcessor;
-use Shoperti\Uploader\Processors\ImageProcessor;
+use Shoperti\Uploader\Contracts\UploaderManager as UploaderManagerContract;
+use Shoperti\Uploader\FileProcessors\ProcessorResolver;
+use Shoperti\Uploader\FileProcessors\GenericFileProcessor;
+use Shoperti\Uploader\FileProcessors\ImageFileProcessor;
 use Shoperti\Uploader\NameGenerators\FixNameGenerator;
 use Shoperti\Uploader\NameGenerators\FixUniqueNameGenerator;
 use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;
@@ -54,19 +53,19 @@ class UploaderServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->registerNameGeneratosResolver();
+        $this->registerNameGeneratorResolver();
         $this->registerProcessorResolver();
         $this->registerBindings();
     }
 
     /**
-     * Registers the uplaoder processor resolver.
+     * Registers the uploader processor resolver.
      *
      * @return void
      */
-    public function registerNameGeneratosResolver()
+    public function registerNameGeneratorResolver()
     {
-        $this->app->singleton('uploader.namegeneratos.resolver', function (Container $app) {
+        $this->app->singleton('uploader.namegenerator.resolver', function (Container $app) {
             $resolver = new NameGeneratorResolver();
 
             $resolver->register('none', new NoneNameGenerator());
@@ -79,7 +78,7 @@ class UploaderServiceProvider extends ServiceProvider
     }
 
     /**
-     * Registers the uplaoder processor resolver.
+     * Registers the uploader processor resolver.
      *
      * @return void
      */
@@ -88,8 +87,8 @@ class UploaderServiceProvider extends ServiceProvider
         $this->app->singleton('uploader.processor.resolver', function (Container $app) {
             $resolver = new ProcessorResolver();
 
-            foreach (['file', 'image'] as $processor) {
-                $this->{'register'.ucfirst($processor).'Processor'}($resolver, $processor);
+            foreach (['generic', 'image'] as $processor) {
+                $this->{'register'.ucfirst($processor).'FileProcessor'}($resolver, $processor);
             }
 
             return $resolver;
@@ -99,30 +98,30 @@ class UploaderServiceProvider extends ServiceProvider
     /**
      * Registers the files processor implementation.
      *
-     * @param \Shoperti\Uploader\Processors\ProcessorResolver $resolver
-     * @param string                                          $processor
+     * @param \Shoperti\Uploader\FileProcessors\ProcessorResolver $resolver
+     * @param string                                              $processor
      *
      * @return void
      */
-    public function registerFileProcessor(ProcessorResolver $resolver, $processor)
+    public function registerGenericFileProcessor(ProcessorResolver $resolver, $processor)
     {
         $resolver->register($processor, function () {
-            return new FileProcessor();
+            return new GenericFileProcessor();
         });
     }
 
     /**
      * Registers the images processor implementation.
      *
-     * @param \Shoperti\Uploader\Processors\ProcessorResolver $resolver
-     * @param string                                          $processor
+     * @param \Shoperti\Uploader\FileProcessors\ProcessorResolver $resolver
+     * @param string                                              $processor
      *
      * @return void
      */
-    public function registerImageProcessor(ProcessorResolver $resolver, $processor)
+    public function registerImageFileProcessor(ProcessorResolver $resolver, $processor)
     {
         $resolver->register($processor, function () {
-            return new ImageProcessor();
+            return new ImageFileProcessor();
         });
     }
 
@@ -136,14 +135,14 @@ class UploaderServiceProvider extends ServiceProvider
         $this->app->singleton('uploader', function (Container $app) {
             $config = $app['config']['uploader'];
             $processorResolver = $app['uploader.processor.resolver'];
-            $nameGeneratorResolver = $app['uploader.namegeneratos.resolver'];
+            $nameGeneratorResolver = $app['uploader.namegenerator.resolver'];
             $filesystem = $app['filesystem'];
 
-            return new Factory($processorResolver, $nameGeneratorResolver, $filesystem, $config);
+            return new UploaderManager($processorResolver, $nameGeneratorResolver, $filesystem, $config);
         });
 
-        $this->app->alias('uploader', Factory::class);
-        $this->app->alias('uploader', FactoryContract::class);
+        $this->app->alias('uploader', UploaderManager::class);
+        $this->app->alias('uploader', UploaderManagerContract::class);
     }
 
     /**

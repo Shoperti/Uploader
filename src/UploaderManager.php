@@ -3,13 +3,12 @@
 namespace Shoperti\Uploader;
 
 use ErrorException;
-use Exception;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use League\Flysystem\FileNotFoundException as LeagueFileNotFoundException;
-use Shoperti\Uploader\Contracts\Factory as FactoryContract;
+use Shoperti\Uploader\Contracts\UploaderManager as UploaderManagerContract;
 use Shoperti\Uploader\Exceptions\FileNotFoundException;
 use Shoperti\Uploader\Exceptions\RemoteFileException;
-use Shoperti\Uploader\Processors\ProcessorResolver;
+use Shoperti\Uploader\FileProcessors\ProcessorResolver;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Shoperti\Uploader\Exceptions\DisallowedFileException;
@@ -27,7 +26,7 @@ use Illuminate\Support\Str;
  * @author Arturo Rodríguez <arturo@shoperti.com>
  * @author Joseph Cohen <joe@shoperti.com>
  */
-class Factory implements FactoryContract
+class UploaderManager implements UploaderManagerContract
 {
     /**
      * The filename generator instance.
@@ -39,7 +38,7 @@ class Factory implements FactoryContract
     /**
      * The file processor instance.
      *
-     * @var \Shoperti\Uploader\Processors\ProcessorResolver
+     * @var \Shoperti\Uploader\FileProcessors\ProcessorResolver
      */
     protected $processors;
 
@@ -58,11 +57,12 @@ class Factory implements FactoryContract
     protected $config;
 
     /**
-     * Creates a new Uploader instance.
+     * Creates a new uploader manager instance.
      *
-     * @param \Shoperti\Uploader\Processors\ProcessorResolver         $processors
+     * @param \Shoperti\Uploader\FileProcessors\ProcessorResolver     $processors
      * @param \Shoperti\Uploader\NameGenerators\NameGeneratorResolver $generators
      * @param \Illuminate\Contracts\Filesystem\Factory                $filesystem
+     * @param array                                                   $config
      *
      * @return void
      */
@@ -82,28 +82,25 @@ class Factory implements FactoryContract
      * Makes a new uploader instance.
      *
      * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
-     * @param  string                                              $conn
+     * @param  string|null                                         $connection
      *
-     * @return \Shoperti\Uploader\Upload
+     * @return \Shoperti\Uploader\Uploader
      */
-    public function make($uploadedFile, $conn = null)
+    public function make($uploadedFile, $connection = null)
     {
         $file = $this->getFile($uploadedFile);
 
-        if ($conn) {
-            $config = Arr::get($this->config['configurations'], $conn);
-        } else {
-            $config = $this->getConfigFromFile($uploadedFile);
-        }
+        $config = $connection
+            ? Arr::get($this->config['configurations'], $connection)
+            : $this->getConfigFromFile($uploadedFile);
 
-        $processor = $this->processors->resolve(Arr::get($config, 'processor'));
+        $fileProcessor = $this->processors->resolve(Arr::get($config, 'processor'));
 
-        $generator = $this->generators->resolve(Arr::get($config, 'name_generator', 'none'));
+        $nameGenerator = $this->generators->resolve(Arr::get($config, 'name_generator', 'none'));
 
         return new Uploader(
-            $this,
-            $processor,
-            $generator,
+            $fileProcessor,
+            $nameGenerator,
             $this->filesystem,
             $file,
             $config
@@ -115,20 +112,17 @@ class Factory implements FactoryContract
      *
      * @param  string|\Symfony\Component\HttpFoundation\File\UploadedFile $file
      *
+     * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
+     *
      * @return \Symfony\Component\HttpFoundation\File\UploadedFile
      */
     public function getFile($file)
     {
-        if (!is_string($file)) {
-            return $file;
-        }
-
-        // this may throw a RemoteFileException
-        return $this->getFileFromUrl($file);
+        return is_string($file) ? $this->getFileFromUrl($file) : $file;
     }
 
     /**
-     * Gets a file stored in a remote location, accessible through HTTP.
+     * Gets a file stored in a remote location accessible through HTTP.
      *
      * @param string $url
      *
@@ -159,8 +153,8 @@ class Factory implements FactoryContract
     /**
      * Deletes a stored file.
      *
-     * @param string $filePath
      * @param string $disk
+     * @param string $filePath
      *
      * @throws \Shoperti\Uploader\Exceptions\FileNotFoundException
      *
@@ -217,9 +211,9 @@ class Factory implements FactoryContract
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\InvalidConfigurationException
      *
-     * @return void
+     * @return array
      */
-    public function getConfigFromFile($uploadedFile)
+    protected function getConfigFromFile($uploadedFile)
     {
         if (!$fileMimeType = $this->getMimeTypeFromAllowedFile($uploadedFile)) {
             throw new DisallowedFileException(
@@ -243,9 +237,9 @@ class Factory implements FactoryContract
     {
         $fileMimeType = $uploadedFile->getMimeType();
 
-        if (!in_array($fileMimeType, Arr::get($this->config, 'blocked_mimetypes', []))) {
-            return $fileMimeType;
-        }
+        return !in_array($fileMimeType, Arr::get($this->config, 'blocked_mimetypes', []))
+            ? $fileMimeType
+            : null;
     }
 
     /**

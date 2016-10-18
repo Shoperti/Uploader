@@ -11,4 +11,5 @@ use Exception;
  */
 class InvalidConfigurationException extends Exception
 {
+    //
 }
