@@ -26,7 +26,10 @@ class FixNameGenerator implements NameGenerator
     {
         $pathInfo = pathinfo($filePath);
 
-        return $this->getSanitizedFileName(Arr::get($pathInfo, 'filename')).Arr::get($pathInfo, 'extension');
+        $name = $this->getSanitizedFileName(Arr::get($pathInfo, 'filename'));
+        $extension = Arr::get($pathInfo, 'extension');
+
+        return "{$name}.{$extension}";
     }
 
     /**
