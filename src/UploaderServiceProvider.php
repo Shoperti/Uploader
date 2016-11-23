@@ -87,41 +87,15 @@ class UploaderServiceProvider extends ServiceProvider
         $this->app->singleton('uploader.processor.resolver', function (Container $app) {
             $resolver = new ProcessorResolver();
 
-            foreach (['generic', 'image'] as $processor) {
-                $this->{'register'.ucfirst($processor).'FileProcessor'}($resolver, $processor);
-            }
+            $resolver->register('file', function () {
+                return new GenericFileProcessor();
+            });
+
+            $resolver->register('image', function () {
+                return new ImageFileProcessor();
+            });
 
             return $resolver;
-        });
-    }
-
-    /**
-     * Registers the files processor implementation.
-     *
-     * @param \Shoperti\Uploader\FileProcessors\ProcessorResolver $resolver
-     * @param string                                              $processor
-     *
-     * @return void
-     */
-    public function registerGenericFileProcessor(ProcessorResolver $resolver, $processor)
-    {
-        $resolver->register($processor, function () {
-            return new GenericFileProcessor();
-        });
-    }
-
-    /**
-     * Registers the images processor implementation.
-     *
-     * @param \Shoperti\Uploader\FileProcessors\ProcessorResolver $resolver
-     * @param string                                              $processor
-     *
-     * @return void
-     */
-    public function registerImageFileProcessor(ProcessorResolver $resolver, $processor)
-    {
-        $resolver->register($processor, function () {
-            return new ImageFileProcessor();
         });
     }
 
