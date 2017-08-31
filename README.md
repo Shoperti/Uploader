@@ -12,7 +12,7 @@ Add to composer
 
 ```json
     "require": {
-        "shoperti/uploader": "~1.0"
+        "shoperti/uploader": "~2.0"
     },
 ```
 
@@ -75,7 +75,7 @@ class Controller extends BaseController
 
                 // generate an Uploader through the manager
                 // using the uploaded file or the file URL as argument
-                ->make(\Request::file('file') ?: \Request::input('file'))
+                ->make(request()->file('file') ?: request()->input('file'))
 
                 // then call the upload() method with the location path as argument
                 ->upload($path = 'my_files', $disk = null);

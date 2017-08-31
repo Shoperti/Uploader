@@ -8,15 +8,15 @@
     "license": "MIT",
     "require": {
         "php": ">=5.5.9",
-        "illuminate/contracts": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*",
-        "illuminate/support": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*",
-        "illuminate/filesystem": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*",
-        "illuminate/http": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*",
-        "intervention/image": "^2.3.9"
+        "illuminate/contracts": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+        "illuminate/support": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+        "illuminate/filesystem": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+        "illuminate/http": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+        "intervention/image": "^2.4"
     },
     "require-dev": {
-        "graham-campbell/testbench": "^3.3",
-        "phpunit/phpunit": "^4.8|^5.0"
+        "graham-campbell/testbench": "^3.3|^4.0",
+        "phpunit/phpunit": "^4.8|^5.0|^6.0"
     },
     "autoload": {
         "psr-4": {
@@ -31,6 +31,11 @@
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Shoperti\\Uploader\\UploaderServiceProvider"
+            ]
         }
     },
     "minimum-stability": "dev",
