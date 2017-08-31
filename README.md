@@ -12,7 +12,7 @@ Add to composer
 
 ```json
     "require": {
-        "shoperti/uploader": "dev-master"
+        "shoperti/uploader": "~1.0"
     },
 ```
 
@@ -105,8 +105,3 @@ class Controller extends BaseController
 ```
 
 * _Please refer to the [`UploadResult` implementation](src/UploadResult.php) for more details._
-
-
-### TODO
-
-[ ] Test functionality
