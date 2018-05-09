@@ -78,13 +78,14 @@ class Uploader implements UploaderInterface
      *
      * @param string      $path
      * @param string|null $disk
+     * @param mixed       $options
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function upload($path = null, $disk = null)
+    public function upload($path = null, $disk = null, $options = [])
     {
         $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
@@ -100,7 +101,7 @@ class Uploader implements UploaderInterface
 
         try {
             // put() may throw an \InvalidArgumentException
-            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile);
+            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile, $options);
             $e = null;
         } catch (Exception $e) {
             $wasMoved = false;
@@ -128,13 +129,14 @@ class Uploader implements UploaderInterface
      * @param string      $path
      * @param string      $name
      * @param string|null $disk
+     * @param mixed       $options
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function uploadAs($path, $name, $disk = null)
+    public function uploadAs($path, $name, $disk = null, $options = [])
     {
         $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
@@ -148,7 +150,7 @@ class Uploader implements UploaderInterface
 
         try {
             // put() may throw an \InvalidArgumentException
-            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile);
+            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile, $options);
             $e = null;
         } catch (Exception $e) {
             $wasMoved = false;

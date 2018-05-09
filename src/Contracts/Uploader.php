@@ -15,13 +15,14 @@ interface Uploader
      *
      * @param string      $path
      * @param string|null $disk
+     * @param mixed       $options
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function upload($path, $disk = null);
+    public function upload($path, $disk = null, $options = []);
 
     /*
      * Uploads a file to a filesystem disk with a name.
@@ -29,11 +30,12 @@ interface Uploader
      * @param string      $path
      * @param string      $name
      * @param string|null $disk
+     * @param mixed       $options
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
-    public function uploadAs($path, $name, $disk = null);
+    public function uploadAs($path, $name, $disk = null, $options = []);
 }
