@@ -7,7 +7,7 @@ use Exception;
 /**
  * This is the disallowed file exception class.
  *
- * @author Arturo Rodrígez <arturo@shoperti.com>
+ * @author Arturo Rodríguez <arturo@shoperti.com>
  */
 class DisallowedFileException extends Exception
 {

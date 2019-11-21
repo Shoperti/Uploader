@@ -7,7 +7,7 @@ use Exception;
 /**
  * This is the remote file exception class.
  *
- * @author Arturo Rodrígez <arturo@shoperti.com>
+ * @author Arturo Rodríguez <arturo@shoperti.com>
  */
 class RemoteFileException extends Exception
 {

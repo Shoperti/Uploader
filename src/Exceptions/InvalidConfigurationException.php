@@ -7,7 +7,7 @@ use Exception;
 /**
  * This is the invalid configuration exception class.
  *
- * @author Arturo Rodrígez <arturo@shoperti.com>
+ * @author Arturo Rodríguez <arturo@shoperti.com>
  */
 class InvalidConfigurationException extends Exception
 {

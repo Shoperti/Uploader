@@ -5,7 +5,7 @@ namespace Shoperti\Uploader\Contracts;
 /**
  * This is the uploader interface class.
  *
- * @author Arturo Rodrígez <arturo@shoperti.com>
+ * @author Arturo Rodríguez <arturo@shoperti.com>
  * @author Joseph Cohen <joe@shoperti.com>
  */
 interface Uploader
