@@ -20,6 +20,8 @@ class ImageFileProcessor extends BaseFileProcessor implements FileProcessor
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $file
      * @param array                                               $config
      *
+     * @throws \Intervention\Image\Exception\NotReadableException
+     *
      * @return string
      */
     public function process($file, array $config = [])
@@ -33,7 +35,7 @@ class ImageFileProcessor extends BaseFileProcessor implements FileProcessor
 
         ini_set('memory_limit', $configMemoryLimit);
 
-        // process the image
+        // process the image, may throw NotReadableException
         $image = ImageManager::make($file);
 
         $image->resize($imageWidth, $imageWidth, function ($constraint) {
