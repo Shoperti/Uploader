@@ -145,9 +145,10 @@ class Uploader implements UploaderInterface
 
         $disk = $disk ?: Arr::get($this->config, 'disk');
 
-        $uploadPath = implode(array_filter([
-            $path, Arr::get($this->config, 'subpath', ''), $filename
-        ]), '/');
+        $uploadPath = implode(
+            '/',
+            array_filter([$path, Arr::get($this->config, 'subpath'), $filename])
+        );
 
         try {
             // put() may throw an \InvalidArgumentException
