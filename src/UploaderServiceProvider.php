@@ -5,16 +5,16 @@ namespace Shoperti\Uploader;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Application as LaravelApplication;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Lumen\Application as LumenApplication;
 use Shoperti\Uploader\Contracts\UploaderManager as UploaderManagerContract;
-use Shoperti\Uploader\FileProcessors\ProcessorResolver;
 use Shoperti\Uploader\FileProcessors\GenericFileProcessor;
 use Shoperti\Uploader\FileProcessors\ImageFileProcessor;
+use Shoperti\Uploader\FileProcessors\ProcessorResolver;
 use Shoperti\Uploader\NameGenerators\FixNameGenerator;
 use Shoperti\Uploader\NameGenerators\FixUniqueNameGenerator;
 use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;
 use Shoperti\Uploader\NameGenerators\NoneNameGenerator;
 use Shoperti\Uploader\NameGenerators\UniqidNameGenerator;
-use Laravel\Lumen\Application as LumenApplication;
 
 class UploaderServiceProvider extends ServiceProvider
 {

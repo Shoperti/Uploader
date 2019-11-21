@@ -31,8 +31,8 @@ class ProcessorResolver
      *
      * The processor string typically corresponds to a file extension.
      *
-     * @param  string   $processor
-     * @param  \Closure  $resolver
+     * @param string   $processor
+     * @param \Closure $resolver
      *
      * @return void
      */

@@ -23,7 +23,7 @@ interface Uploader
      */
     public function upload($path, $disk = null);
 
-    /*
+    /**
      * Uploads a file to a filesystem disk with a name.
      *
      * @param string      $path

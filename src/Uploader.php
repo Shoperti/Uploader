@@ -5,9 +5,9 @@ namespace Shoperti\Uploader;
 use Exception;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Support\Arr;
-use Shoperti\Uploader\Contracts\Uploader as UploaderInterface;
-use Shoperti\Uploader\Contracts\NameGenerator;
 use Shoperti\Uploader\Contracts\FileProcessor;
+use Shoperti\Uploader\Contracts\NameGenerator;
+use Shoperti\Uploader\Contracts\Uploader as UploaderInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
