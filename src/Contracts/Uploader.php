@@ -5,7 +5,7 @@ namespace Shoperti\Uploader\Contracts;
 /**
  * This is the uploader interface class.
  *
- * @author Arturo Rodrígez <arturo@shoperti.com>
+ * @author Arturo Rodríguez <arturo@shoperti.com>
  * @author Joseph Cohen <joe@shoperti.com>
  */
 interface Uploader
@@ -23,7 +23,7 @@ interface Uploader
      */
     public function upload($path, $disk = null);
 
-    /*
+    /**
      * Uploads a file to a filesystem disk with a name.
      *
      * @param string      $path

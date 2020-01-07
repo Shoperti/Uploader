@@ -5,9 +5,9 @@ namespace Shoperti\Uploader;
 use Exception;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Support\Arr;
-use Shoperti\Uploader\Contracts\Uploader as UploaderInterface;
-use Shoperti\Uploader\Contracts\NameGenerator;
 use Shoperti\Uploader\Contracts\FileProcessor;
+use Shoperti\Uploader\Contracts\NameGenerator;
+use Shoperti\Uploader\Contracts\Uploader as UploaderInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
@@ -81,16 +81,19 @@ class Uploader implements UploaderInterface
      *
      * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
+     * @throws \Exception
      *
      * @return \Shoperti\Uploader\UploadResult
      */
     public function upload($path = null, $disk = null)
     {
+        // this may throw exceptions relative to the processor, like NotReadableException on image processor
         $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
-        $basePath = implode(array_filter([
-            $path, Arr::get($this->config, 'subpath', '')
-        ]), '/');
+        $basePath = implode(
+            '/',
+            array_filter([$path, Arr::get($this->config, 'subpath')])
+        );
 
         $generatedFilename = $this->nameGenerator->generate($basePath.'/'.$this->uploadedFile->getClientOriginalName(), $this->config);
 
@@ -142,9 +145,10 @@ class Uploader implements UploaderInterface
 
         $disk = $disk ?: Arr::get($this->config, 'disk');
 
-        $uploadPath = implode(array_filter([
-            $path, Arr::get($this->config, 'subpath', ''), $filename
-        ]), '/');
+        $uploadPath = implode(
+            '/',
+            array_filter([$path, Arr::get($this->config, 'subpath'), $filename])
+        );
 
         try {
             // put() may throw an \InvalidArgumentException

@@ -4,19 +4,19 @@ namespace Shoperti\Uploader;
 
 use ErrorException;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
-use League\Flysystem\FileNotFoundException as LeagueFileNotFoundException;
-use Shoperti\Uploader\Contracts\UploaderManager as UploaderManagerContract;
-use Shoperti\Uploader\Exceptions\FileNotFoundException;
-use Shoperti\Uploader\Exceptions\RemoteFileException;
-use Shoperti\Uploader\FileProcessors\ProcessorResolver;
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Shoperti\Uploader\Exceptions\DisallowedFileException;
-use Shoperti\Uploader\Exceptions\InvalidConfigurationException;
-use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use League\Flysystem\FileNotFoundException as LeagueFileNotFoundException;
+use Shoperti\Uploader\Contracts\UploaderManager as UploaderManagerContract;
+use Shoperti\Uploader\Exceptions\DisallowedFileException;
+use Shoperti\Uploader\Exceptions\FileNotFoundException;
+use Shoperti\Uploader\Exceptions\InvalidConfigurationException;
+use Shoperti\Uploader\Exceptions\RemoteFileException;
+use Shoperti\Uploader\FileProcessors\ProcessorResolver;
+use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Class Uploader.
@@ -81,8 +81,8 @@ class UploaderManager implements UploaderManagerContract
     /**
      * Makes a new uploader instance.
      *
-     * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
-     * @param  string|null                                         $connection
+     * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
+     * @param string|null                                         $connection
      *
      * @return \Shoperti\Uploader\Uploader
      */
@@ -110,7 +110,7 @@ class UploaderManager implements UploaderManagerContract
     /**
      * Gets a file to process.
      *
-     * @param  string|\Symfony\Component\HttpFoundation\File\UploadedFile $file
+     * @param string|\Symfony\Component\HttpFoundation\File\UploadedFile $file
      *
      * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
      *
@@ -158,7 +158,7 @@ class UploaderManager implements UploaderManagerContract
      *
      * @throws \Shoperti\Uploader\Exceptions\FileNotFoundException
      *
-     * @return bool true on success, false on failure.
+     * @return bool true on success, false on failure
      */
     public function delete($disk, $filePath)
     {
@@ -196,7 +196,7 @@ class UploaderManager implements UploaderManagerContract
         // get the name from the url
         $name = preg_replace('/\\?.*/', '', $url);
 
-        if (false !== ($pos = strpos($name, '#'))) {
+        if (($pos = strpos($name, '#')) !== false) {
             $name = substr($name, 0, $pos);
         }
 
