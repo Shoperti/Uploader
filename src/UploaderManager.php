@@ -84,6 +84,9 @@ class UploaderManager implements UploaderManagerContract
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
      * @param string|null                                         $connection
      *
+     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
+     * @throws \Shoperti\Uploader\Exceptions\InvalidConfigurationException
+     *
      * @return \Shoperti\Uploader\Uploader
      */
     public function make($uploadedFile, $connection = null)
@@ -92,6 +95,7 @@ class UploaderManager implements UploaderManagerContract
 
         $config = $connection
             ? Arr::get($this->config['configurations'], $connection)
+            // may throw DisallowedFileException, InvalidConfigurationException
             : $this->getConfigFromFile($uploadedFile);
 
         $fileProcessor = $this->processors->resolve(Arr::get($config, 'processor'));
@@ -215,31 +219,14 @@ class UploaderManager implements UploaderManagerContract
      */
     protected function getConfigFromFile($uploadedFile)
     {
-        if (!$fileMimeType = $this->getMimeTypeFromAllowedFile($uploadedFile)) {
-            throw new DisallowedFileException(
-                $uploadedFile->getClientOriginalName(),
-                $fileMimeType,
-                sprintf("File with not allowed mime-type '%s'", $fileMimeType)
-            );
-        }
-
-        return $this->getConfigForMimeType($fileMimeType);
-    }
-
-    /**
-     * Gets the file mime-type if it's part of the configured allowed mime-types.
-     *
-     * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
-     *
-     * @return string|null
-     */
-    protected function getMimeTypeFromAllowedFile($uploadedFile)
-    {
         $fileMimeType = $uploadedFile->getMimeType();
 
-        return !in_array($fileMimeType, Arr::get($this->config, 'blocked_mimetypes', []))
-            ? $fileMimeType
-            : null;
+        if (!$fileMimeType || in_array($fileMimeType, Arr::get($this->config, 'blocked_mimetypes', []))) {
+            throw new DisallowedFileException($uploadedFile->getClientOriginalName(), $fileMimeType);
+        }
+
+        // may throw InvalidConfigurationException
+        return $this->getConfigForMimeType($fileMimeType);
     }
 
     /**

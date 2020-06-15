@@ -15,6 +15,8 @@ interface FileProcessor
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $file
      * @param array                                               $config
      *
+     * @throws \Shoperti\Uploader\Exceptions\InvalidFileException
+     *
      * @return string
      */
     public function process($file, array $config = []);

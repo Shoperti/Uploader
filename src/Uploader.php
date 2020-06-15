@@ -79,80 +79,64 @@ class Uploader implements UploaderInterface
      * @param string      $path
      * @param string|null $disk
      *
-     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
-     * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
-     * @throws \Exception
+     * @throws \Shoperti\Uploader\Exceptions\InvalidFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
     public function upload($path = null, $disk = null)
     {
-        // this may throw exceptions relative to the processor, like NotReadableException on image processor
+        // may throw InvalidFileException
         $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
-        $basePath = implode(
-            '/',
-            array_filter([$path, Arr::get($this->config, 'subpath')])
-        );
+        $basePath = implode('/', array_filter([$path, Arr::get($this->config, 'subpath')]));
 
         $generatedFilename = $this->nameGenerator->generate($basePath.'/'.$this->uploadedFile->getClientOriginalName(), $this->config);
 
-        $disk = $disk ?: Arr::get($this->config, 'disk');
-
         $uploadPath = $basePath.'/'.$generatedFilename;
 
-        try {
-            // put() may throw an \InvalidArgumentException
-            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile);
-            $e = null;
-        } catch (Exception $e) {
-            $wasMoved = false;
-        }
-
-        $url = $wasMoved ? $this->filesystem->disk($disk)->url($uploadPath) : null;
-
-        $path = pathinfo($uploadPath);
-
-        return new UploadResult(
-            $wasMoved,
-            $this->uploadedFile,
-            $disk,
-            $generatedFilename,
-            $url,
-            $path['dirname'],
-            [],
-            $e
-        );
+        return $this->putFileOnDisk($processedFile, $uploadPath, $generatedFilename, $disk);
     }
 
-    /*
+    /**
      * Uploads a file to a filesystem disk with a name.
      *
      * @param string      $path
      * @param string      $name
      * @param string|null $disk
      *
-     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
-     * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
+     * @throws \Shoperti\Uploader\Exceptions\InvalidFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
     public function uploadAs($path, $name, $disk = null)
     {
+        // may throw InvalidFileException
         $processedFile = $this->fileProcessor->process($this->uploadedFile, $this->config);
 
         $filename = $this->nameGenerator->generate($this->uploadedFile, $this->config);
 
-        $disk = $disk ?: Arr::get($this->config, 'disk');
+        $uploadPath = implode('/', array_filter([$path, Arr::get($this->config, 'subpath'), $filename]));
 
-        $uploadPath = implode(
-            '/',
-            array_filter([$path, Arr::get($this->config, 'subpath'), $filename])
-        );
+        return $this->putFileOnDisk($processedFile, $uploadPath, $filename, $disk);
+    }
+
+    /**
+     * Creates an upload result object.
+     *
+     * @param string      $fileContent
+     * @param string      $uploadPath
+     * @param string      $filename
+     * @param string|null $disk
+     *
+     * @return \Shoperti\Uploader\UploadResult
+     */
+    protected function putFileOnDisk($fileContent, $uploadPath, $filename, $disk)
+    {
+        $disk = $disk ?: Arr::get($this->config, 'disk');
 
         try {
             // put() may throw an \InvalidArgumentException
-            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, (string) $processedFile);
+            $wasMoved = $this->filesystem->disk($disk)->put($uploadPath, $fileContent);
             $e = null;
         } catch (Exception $e) {
             $wasMoved = false;
