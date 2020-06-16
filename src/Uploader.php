@@ -121,7 +121,7 @@ class Uploader implements UploaderInterface
     }
 
     /**
-     * Creates an upload result object.
+     * Puts the file on the filesystem.
      *
      * @param string      $fileContent
      * @param string      $uploadPath

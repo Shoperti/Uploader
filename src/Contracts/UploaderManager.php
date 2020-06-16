@@ -15,6 +15,9 @@ interface UploaderManager
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
      * @param string|null                                         $connection
      *
+     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
+     * @throws \Shoperti\Uploader\Exceptions\InvalidConfigurationException
+     *
      * @return \Shoperti\Uploader\Uploader
      */
     public function make($uploadedFile, $connection);
