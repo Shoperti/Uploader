@@ -1,0 +1,24 @@
+version: 2.1
+
+jobs:
+  build:
+    working_directory: ~/Shoperti/Uploader
+    docker:
+      - image: circleci/php:7.0.33
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-composer-dependencies-dev-{{ .Branch }}-
+            - v1-composer-dependencies-dev-master-
+            - v1-composer-dependencies-dev-
+      - run:
+          name: Install PHP Dependencies
+          command: composer install --no-interaction --no-scripts --no-suggest --prefer-dist -o
+      - save_cache:
+          key: v1-composer-dependencies-dev-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.composer/cache
+      - run:
+          name: Run PHP Tests
+          command: vendor/bin/phpunit -d memory_limit=512M
