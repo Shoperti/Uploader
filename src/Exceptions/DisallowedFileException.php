@@ -2,63 +2,25 @@
 
 namespace Shoperti\Uploader\Exceptions;
 
-use Exception;
-
 /**
  * This is the disallowed file exception class.
  *
  * @author Arturo Rodríguez <arturo@shoperti.com>
  */
-class DisallowedFileException extends Exception
+class DisallowedFileException extends FileException
 {
     /**
-     * The invalid file name.
+     * Creates a new instance.
      *
-     * @var string
-     */
-    private $name;
-
-    /**
-     * The invalid file mime-type.
-     *
-     * @var string
-     */
-    private $mimeType;
-
-    /**
-     * Creates a new DisallowedFileException object.
-     *
-     * @param string $name
-     * @param string $mimeType
-     * @param string $message
+     * @param string      $name
+     * @param string|null $mimeType
      *
      * @return void
      */
-    public function __construct($name, $mimeType, $message = null)
+    public function __construct($name, $mimeType)
     {
-        $this->name = $name;
-        $this->mimeType = $mimeType;
+        $msg = "The file $name with mime-type $mimeType is not allowed";
 
-        parent::__construct($message);
-    }
-
-    /**
-     * Gets the invalid file name.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Gets the invalid file mime-type.
-     *
-     * @return string
-     */
-    public function getMimeType()
-    {
-        return $this->mimeType;
+        parent::__construct($name, $mimeType, $msg);
     }
 }

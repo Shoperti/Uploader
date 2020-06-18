@@ -16,8 +16,7 @@ interface Uploader
      * @param string      $path
      * @param string|null $disk
      *
-     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
-     * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
+     * @throws \Shoperti\Uploader\Exceptions\InvalidFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */
@@ -30,8 +29,7 @@ interface Uploader
      * @param string      $name
      * @param string|null $disk
      *
-     * @throws \Shoperti\Uploader\Exceptions\DisallowedFileException
-     * @throws \Shoperti\Uploader\Exceptions\RemoteFileException
+     * @throws \Shoperti\Uploader\Exceptions\InvalidFileException
      *
      * @return \Shoperti\Uploader\UploadResult
      */

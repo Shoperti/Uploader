@@ -3,8 +3,11 @@
 namespace Shoperti\Uploader\FileProcessors;
 
 use Illuminate\Support\Arr;
+use Intervention\Image\Exception\NotReadableException;
+use Intervention\Image\Exception\NotSupportedException;
 use Intervention\Image\ImageManagerStatic as ImageManager;
 use Shoperti\Uploader\Contracts\FileProcessor;
+use Shoperti\Uploader\Exceptions\InvalidFileException;
 
 /**
  * This is the image processor class.
@@ -20,7 +23,7 @@ class ImageFileProcessor extends BaseFileProcessor implements FileProcessor
      * @param \Symfony\Component\HttpFoundation\File\UploadedFile $file
      * @param array                                               $config
      *
-     * @throws \Intervention\Image\Exception\NotReadableException
+     * @throws \Shoperti\Uploader\Exceptions\InvalidFileException
      *
      * @return string
      */
@@ -35,8 +38,11 @@ class ImageFileProcessor extends BaseFileProcessor implements FileProcessor
 
         ini_set('memory_limit', $configMemoryLimit);
 
-        // process the image, may throw NotReadableException
-        $image = ImageManager::make($file);
+        try {
+            $image = ImageManager::make($file);
+        } catch (NotReadableException $e) {
+            throw new InvalidFileException($file->getClientOriginalName(), $file->getClientMimeType(), $e);
+        }
 
         $image->resize($imageWidth, $imageWidth, function ($constraint) {
             /* @var \Intervention\Image\Constraint $constraint */
@@ -48,11 +54,16 @@ class ImageFileProcessor extends BaseFileProcessor implements FileProcessor
             $image->orientate();
         }
 
-        $image->save();
+        try {
+            $image->save();
+        } catch (NotSupportedException $e) {
+            // e.g. Encoding format (jfif) is not supported
+            throw new InvalidFileException($file->getClientOriginalName(), $file->getMimeType(), $e);
+        }
 
         // reset original value
         ini_set('memory_limit', $originalMemoryLimit);
 
-        return $image;
+        return (string) $image;
     }
 }

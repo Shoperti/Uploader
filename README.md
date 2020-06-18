@@ -55,6 +55,7 @@ namespace App\Http\Controllers;
 // Import the Shoperti Uploader Manager in your controller
 use Shoperti\Uploader\Contracts\UploaderManager;
 use Shoperti\Uploader\Exceptions\DisallowedFileException;
+use Shoperti\Uploader\Exceptions\InvalidFileException;
 use Shoperti\Uploader\Exceptions\RemoteFileException;
 
 // To upload or delete a file, just inject the manager either in the constructor
@@ -83,6 +84,10 @@ class Controller extends BaseController
         } catch (DisallowedFileException $dfe) {
 
             // If the uploaded file has a disallowed mime-type
+
+        } catch (InvalidFileException $ife) {
+
+            // If the uploaded file is invalid
 
         } catch (RemoteFileException $rfe) {
 
