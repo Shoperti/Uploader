@@ -41,6 +41,8 @@ class FixNameGenerator implements NameGenerator
      */
     protected function getSanitizedFileName($filename)
     {
-        return preg_replace('/_+/', '_', preg_replace("/[^a-z0-9_\-\.\,\+\*\(\)$']/i", '_', Str::ascii($filename)));
+        $cleanName = preg_replace("/[^a-z0-9_!$'\-\.\(\)]/i", '_', Str::ascii($filename));
+
+        return preg_replace('/_+/', '_', $cleanName);
     }
 }
