@@ -4,7 +4,6 @@ namespace Shoperti\Uploader\NameGenerators;
 
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Support\Arr;
-use Shoperti\Uploader\Contracts\NameGenerator;
 
 /**
  * This is the fix unique name generator class.
@@ -12,7 +11,7 @@ use Shoperti\Uploader\Contracts\NameGenerator;
  * @author Arturo Rodríguez <arturo@shoperti.com>
  * @author Joseph Cohen <joe@shoperti.com>
  */
-class FixUniqueNameGenerator extends FixNameGenerator implements NameGenerator
+class FixUniqueNameGenerator extends FixNameGenerator
 {
     /**
      * The laravel storage instance.
