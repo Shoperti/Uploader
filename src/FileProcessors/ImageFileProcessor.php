@@ -34,7 +34,7 @@ class ImageFileProcessor extends BaseFileProcessor implements FileProcessor
         // temporally configure the memory limit
         $originalMemoryLimit = ini_get('memory_limit');
 
-        $configMemoryLimit = Arr::get($config, 'image_resize_memory_limit', '128M');
+        $configMemoryLimit = Arr::get($config, 'image_resize_memory_limit', '192M');
 
         ini_set('memory_limit', $configMemoryLimit);
 

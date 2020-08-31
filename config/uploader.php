@@ -64,7 +64,7 @@ return [
             'subpath'                   => env('UPLOADER_IMAGES_SUBPATH', 'images'),
             'name_generator'            => env('UPLOADER_IMAGES_FILE_NAMING', 'fix'),
             'image_resize_max_width'    => env('UPLOADER_IMAGES_RESIZE_MAX_WIDTH', 1280),
-            'image_resize_memory_limit' => env('UPLOADER_IMAGES_RESIZE_MEMORY_LIMIT', '128M'),
+            'image_resize_memory_limit' => env('UPLOADER_IMAGES_RESIZE_MEMORY_LIMIT', '192M'),
         ],
         'files' => [
             'processor'      => 'file',
