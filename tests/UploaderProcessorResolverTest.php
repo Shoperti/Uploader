@@ -2,9 +2,10 @@
 
 namespace Shoperti\Tests\Uploader;
 
+use PHPUnit\Framework\TestCase;
 use Shoperti\Uploader\FileProcessors\ProcessorResolver;
 
-class UploaderProcessorResolverTest extends \PHPUnit_Framework_TestCase
+class UploaderProcessorResolverTest extends TestCase
 {
     public function testResolversMayBeResolved()
     {
