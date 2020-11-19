@@ -2,10 +2,11 @@
 
 namespace Shoperti\Tests\Uploader;
 
+use PHPUnit\Framework\TestCase;
 use Shoperti\Uploader\Contracts\NameGenerator;
 use Shoperti\Uploader\NameGenerators\NameGeneratorResolver;
 
-class UploaderGeneratorResolverTest extends \PHPUnit_Framework_TestCase
+class UploaderGeneratorResolverTest extends TestCase
 {
     public function testResolversMayBeResolved()
     {
