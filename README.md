@@ -12,7 +12,7 @@ Add to composer
 
 ```json
     "require": {
-        "shoperti/uploader": "~5.7"
+        "shoperti/uploader": "~5.8"
     },
 ```
 
